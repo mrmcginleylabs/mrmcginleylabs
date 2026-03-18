@@ -16,8 +16,8 @@
         }
         .game-card { cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .game-card:hover { transform: translateY(-8px) scale(1.02); }
-        .grade-btn { transition: all 0.2s ease; }
-        .grade-btn.active { transform: translateY(4px); box-shadow: inset 0 4px 6px rgba(0,0,0,0.2); filter: brightness(0.9); }
+        .grade-btn { transition: all 0.2s ease; border-bottom-width: 4px; }
+        .grade-btn.active { transform: translateY(4px); border-bottom-width: 0px; box-shadow: inset 0 4px 6px rgba(0,0,0,0.2); filter: brightness(0.9); }
         
         #game-overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); }
         #game-container { position: relative; width: 95%; height: 90%; max-width: 1200px; margin: 2% auto; background: white; border-radius: 2rem; overflow: hidden; border: 8px solid #0891b2; }
@@ -27,15 +27,18 @@
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
         /* Highlighting for selected grades in admin panel */
-        .grade-checkbox:checked + label { background-color: #0891b2; color: white; border-color: #0891b2; }
+        .grade-checkbox:checked + label { background-color: #0891b2; color: white; border-color: #0891b2; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3); }
 
         /* Security Clearance Modal */
         #password-modal { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); align-items: center; justify-content: center; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- HEADER: Always visible gear and info buttons -->
+    <!-- HEADER -->
     <header class="bg-cyan-900 text-white shadow-md relative z-20 border-b-4 border-cyan-700">
         <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="filterGames('all')">
@@ -43,10 +46,11 @@
                 <h1 class="text-3xl font-black tracking-tight">Mr. McGinley <span class="text-cyan-400">Labs</span></h1>
             </div>
             <div class="flex items-center space-x-4">
+                <!-- Settings button is always visible -->
                 <button id="admin-toggle-btn" onclick="requestAdminAccess()" class="bg-cyan-800 p-2 rounded-lg hover:bg-cyan-700 transition-colors" title="Admin Settings">
                     <i data-lucide="settings" class="w-5 h-5"></i>
                 </button>
-                <button onclick="document.getElementById('info-modal').style.display='flex'" class="hidden sm:flex items-center space-x-2 bg-cyan-700 px-4 py-2 rounded-xl font-bold border-2 border-cyan-500">
+                <button onclick="document.getElementById('info-modal').style.display='flex'" class="hidden sm:flex items-center space-x-2 bg-cyan-700 px-4 py-2 rounded-xl font-bold border-2 border-cyan-500 shadow-lg">
                     <i data-lucide="info" class="w-5 h-5"></i>
                     <span>Teacher Info</span>
                 </button>
@@ -54,20 +58,20 @@
         </div>
     </header>
 
-    <!-- GRADE BAR: Acts as the "Page Switcher" -->
+    <!-- GRADE BAR -->
     <nav class="bg-white shadow-lg sticky top-0 z-10 border-b-2 border-slate-200">
         <div class="max-w-7xl mx-auto flex justify-center space-x-2 sm:space-x-4 py-3 px-2 overflow-x-auto no-scrollbar">
-            <button onclick="filterGames('K')" id="btn-K" class="grade-btn flex-shrink-0 bg-rose-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(190,18,60)]">K</button>
-            <button onclick="filterGames('1')" id="btn-1" class="grade-btn flex-shrink-0 bg-orange-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(194,65,12)]">1</button>
-            <button onclick="filterGames('2')" id="btn-2" class="grade-btn flex-shrink-0 bg-amber-400 text-amber-900 font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(180,83,9)]">2</button>
-            <button onclick="filterGames('3')" id="btn-3" class="grade-btn flex-shrink-0 bg-emerald-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(4,120,87)]">3</button>
-            <button onclick="filterGames('4')" id="btn-4" class="grade-btn flex-shrink-0 bg-blue-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(29,78,216)]">4</button>
-            <button onclick="filterGames('5')" id="btn-5" class="grade-btn flex-shrink-0 bg-violet-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(109,40,217)]">5</button>
-            <button onclick="filterGames('all')" id="btn-all" class="grade-btn active flex-shrink-0 bg-slate-700 text-white font-black px-4 h-14 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(51,65,85)]">ALL</button>
+            <button onclick="filterGames('K')" id="btn-K" class="grade-btn flex-shrink-0 bg-rose-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-rose-700 shadow-md">K</button>
+            <button onclick="filterGames('1')" id="btn-1" class="grade-btn flex-shrink-0 bg-orange-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-orange-700 shadow-md">1</button>
+            <button onclick="filterGames('2')" id="btn-2" class="grade-btn flex-shrink-0 bg-amber-400 text-amber-900 font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-amber-600 shadow-md">2</button>
+            <button onclick="filterGames('3')" id="btn-3" class="grade-btn flex-shrink-0 bg-emerald-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-emerald-700 shadow-md">3</button>
+            <button onclick="filterGames('4')" id="btn-4" class="grade-btn flex-shrink-0 bg-blue-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-blue-700 shadow-md">4</button>
+            <button onclick="filterGames('5')" id="btn-5" class="grade-btn flex-shrink-0 bg-violet-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-violet-700 shadow-md">5</button>
+            <button onclick="filterGames('all')" id="btn-all" class="grade-btn active flex-shrink-0 bg-slate-700 text-white font-black px-5 h-14 sm:h-16 rounded-2xl border-slate-900 shadow-md">ALL</button>
         </div>
     </nav>
 
-    <!-- MAIN LAB GRID: Where games appear -->
+    <!-- GRID -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         <div id="loading-state" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             <div class="h-64 rounded-3xl loading-shimmer border-4 border-slate-100"></div>
@@ -77,11 +81,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 hidden" id="game-grid"></div>
         <div id="no-games" class="hidden text-center py-20 text-slate-400">
             <i data-lucide="package-open" class="w-20 h-20 mx-auto mb-4 opacity-20"></i>
-            <p class="text-xl font-bold uppercase tracking-tight">No experiments found for this page!</p>
+            <p class="text-xl font-bold uppercase tracking-tight">This page is currently empty.</p>
+            <p class="text-sm font-bold opacity-60">Use the Lab Manager to assign games here!</p>
         </div>
     </main>
 
-    <!-- ADMIN LAB MANAGER: Password protected -->
+    <!-- ADMIN PANEL -->
     <aside id="admin-panel" class="p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-black text-cyan-900 italic uppercase">Lab Manager</h2>
@@ -90,50 +95,50 @@
         
         <form id="add-game-form" class="space-y-4">
             <div>
-                <label class="block text-xs font-black uppercase text-slate-500 mb-1">Game Title</label>
-                <input type="text" id="new-title" required placeholder="e.g. Circus Typing" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold">
+                <label class="block text-xs font-black uppercase text-slate-500 mb-1">Experiment Name</label>
+                <input type="text" id="new-title" required placeholder="e.g. Circus Typing" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold focus:border-cyan-500 transition-colors">
             </div>
             
             <div>
-                <label class="block text-xs font-black uppercase text-slate-500 mb-2">Display on which pages?</label>
+                <label class="block text-xs font-black uppercase text-slate-500 mb-2">Display on Grade Pages:</label>
                 <div class="flex flex-wrap gap-2">
                     <div class="relative">
                         <input type="checkbox" id="check-K" value="K" class="grade-checkbox hidden" name="grades">
-                        <label for="check-K" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">K</label>
+                        <label for="check-K" class="flex items-center justify-center w-11 h-11 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all uppercase">K</label>
                     </div>
                     <div class="relative">
                         <input type="checkbox" id="check-1" value="1" class="grade-checkbox hidden" name="grades">
-                        <label for="check-1" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">1</label>
+                        <label for="check-1" class="flex items-center justify-center w-11 h-11 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">1</label>
                     </div>
                     <div class="relative">
                         <input type="checkbox" id="check-2" value="2" class="grade-checkbox hidden" name="grades">
-                        <label for="check-2" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">2</label>
+                        <label for="check-2" class="flex items-center justify-center w-11 h-11 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">2</label>
                     </div>
                     <div class="relative">
                         <input type="checkbox" id="check-3" value="3" class="grade-checkbox hidden" name="grades">
-                        <label for="check-3" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">3</label>
+                        <label for="check-3" class="flex items-center justify-center w-11 h-11 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">3</label>
                     </div>
                     <div class="relative">
                         <input type="checkbox" id="check-4" value="4" class="grade-checkbox hidden" name="grades">
-                        <label for="check-4" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">4</label>
+                        <label for="check-4" class="flex items-center justify-center w-11 h-11 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">4</label>
                     </div>
                     <div class="relative">
                         <input type="checkbox" id="check-5" value="5" class="grade-checkbox hidden" name="grades">
-                        <label for="check-5" class="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">5</label>
+                        <label for="check-5" class="flex items-center justify-center w-11 h-11 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all">5</label>
                     </div>
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-black uppercase text-slate-500 mb-1">Image URL (from GitHub)</label>
-                <input type="text" id="new-image" placeholder="https://mrmcginleylabs.org/images/game.png" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold">
+                <label class="block text-xs font-black uppercase text-slate-500 mb-1">Thumbnail (GitHub URL)</label>
+                <input type="text" id="new-image" placeholder="https://mrmcginleylabs.org/images/logo.png" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold focus:border-cyan-500 transition-colors">
             </div>
             <div>
                 <label class="block text-xs font-black uppercase text-slate-500 mb-1">Game Filename</label>
-                <input type="text" id="new-url" required placeholder="circus-typing.html" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold">
+                <input type="text" id="new-url" required placeholder="circus-typing.html" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold focus:border-cyan-500 transition-colors">
             </div>
-            <button type="submit" id="submit-btn" class="w-full bg-cyan-600 text-white font-black py-4 rounded-2xl shadow-lg border-b-4 border-cyan-800 active:border-b-0 active:translate-y-1">
-                SYNC TO ALL LABS
+            <button type="submit" id="submit-btn" class="w-full bg-cyan-600 text-white font-black py-4 rounded-2xl shadow-lg border-b-4 border-cyan-800 active:border-b-0 active:translate-y-1 transition-all">
+                ADD TO CLOUD LAB
             </button>
         </form>
 
@@ -142,14 +147,14 @@
         <div id="admin-inventory" class="space-y-2"></div>
     </aside>
 
-    <!-- SECURITY CLEARANCE MODAL: Password "RUCsr13" -->
+    <!-- PASSWORD MODAL -->
     <div id="password-modal">
         <div class="bg-white p-8 rounded-[2rem] border-8 border-cyan-500 shadow-2xl text-center max-w-sm w-full mx-4">
             <div class="bg-cyan-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-cyan-600">
                 <i data-lucide="lock" class="w-8 h-8"></i>
             </div>
             <h2 class="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight">Security Clearance</h2>
-            <p class="text-slate-500 font-bold text-sm mb-6">Enter the Lab Password to continue.</p>
+            <p class="text-slate-500 font-bold text-sm mb-6">Enter password to unlock Lab Manager.</p>
             <input type="password" id="admin-password-input" class="w-full p-4 bg-slate-100 rounded-2xl border-2 border-slate-200 outline-none text-center font-black tracking-[0.5em] focus:border-cyan-500 mb-4" placeholder="•••••••">
             <div id="password-error" class="hidden text-rose-500 font-black text-xs mb-4 uppercase italic">Access Denied!</div>
             <div class="flex gap-3">
@@ -159,7 +164,7 @@
         </div>
     </div>
 
-    <!-- GAME WINDOW OVERLAY: Iframe Console -->
+    <!-- GAME OVERLAY -->
     <div id="game-overlay">
         <div class="flex justify-between items-center max-w-7xl mx-auto px-4 h-16 text-white font-black">
             <span class="text-xl italic uppercase tracking-widest">Lab Experiment Active</span>
@@ -170,36 +175,37 @@
         <div id="game-container"><iframe id="game-iframe" src="" class="w-full h-full border-none"></iframe></div>
     </div>
 
-    <!-- Firebase SDKs and Application Logic -->
+    <!-- Firebase SDKs and Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Initialize Firebase using Canvas Globals
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        setLogLevel('error'); 
+        
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         let games = [];
         let currentFilter = 'all';
         let isAdminAuthenticated = false;
 
-        // AUTHENTICATION
         const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch(e) { console.error("Auth Failed:", e); }
         };
         initAuth();
 
         onAuthStateChanged(auth, (user) => { if (user) setupDataListener(); });
 
-        // CLOUD DATA LISTENER
         function setupDataListener() {
             const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
             onSnapshot(gamesRef, (snapshot) => {
@@ -208,10 +214,9 @@
                 renderInventory();
                 document.getElementById('loading-state').classList.add('hidden');
                 document.getElementById('game-grid').classList.remove('hidden');
-            });
+            }, (err) => console.error("Snapshot Error:", err));
         }
 
-        // GRID FILTERING AND RENDERING
         window.renderGrid = function() {
             const grid = document.getElementById('game-grid');
             const noGames = document.getElementById('no-games');
@@ -219,13 +224,10 @@
             
             const filtered = games.filter(g => {
                 if (currentFilter === 'all') return true;
-                // Check against specific grade assignments
                 if (Array.isArray(g.grades)) {
                     return g.grades.includes(currentFilter);
-                } else if (g.grade) {
-                    return g.grade.toString().split(',').map(s => s.trim()).includes(currentFilter);
                 }
-                return false;
+                return g.grade === currentFilter;
             });
             
             if (filtered.length === 0) {
@@ -234,13 +236,13 @@
                 noGames.classList.add('hidden');
                 filtered.forEach(game => {
                     const card = document.createElement('div');
-                    card.className = "game-card bg-white rounded-3xl overflow-hidden border-4 border-slate-200 shadow-md group";
+                    card.className = "game-card bg-white rounded-3xl overflow-hidden border-4 border-slate-200 shadow-lg group";
                     card.onclick = () => window.openGame(game.url);
-                    const gradeLabel = Array.isArray(game.grades) ? game.grades.join(', ') : (game.grade || '?');
+                    const label = Array.isArray(game.grades) ? game.grades.join(', ') : (game.grade || '?');
                     card.innerHTML = `
                         <div class="h-48 bg-slate-100 flex items-center justify-center relative overflow-hidden">
                             ${game.image ? `<img src="${game.image}" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500">` : `<i data-lucide="image" class="w-16 h-16 text-slate-300"></i>`}
-                            <div class="absolute bottom-3 right-3 bg-white text-cyan-700 font-black px-3 py-1 rounded-xl text-xs uppercase shadow-sm">Grade ${gradeLabel}</div>
+                            <div class="absolute bottom-3 right-3 bg-white text-cyan-700 font-black px-3 py-1 rounded-xl text-xs uppercase shadow-md">Grade ${label}</div>
                         </div>
                         <div class="p-6 text-center"><h3 class="text-2xl font-black text-slate-800">${game.title}</h3></div>
                     `;
@@ -257,10 +259,12 @@
             window.renderGrid();
         }
 
-        // SECURITY AND ADMIN ACCESS
         window.requestAdminAccess = function() {
             if (isAdminAuthenticated) { window.toggleAdmin(); } 
-            else { document.getElementById('password-modal').style.display = 'flex'; document.getElementById('admin-password-input').focus(); }
+            else { 
+                document.getElementById('password-modal').style.display = 'flex'; 
+                setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
+            }
         };
 
         window.hidePasswordModal = function() {
@@ -280,14 +284,13 @@
 
         document.getElementById('admin-password-input').onkeydown = e => { if (e.key === 'Enter') window.checkAdminPassword(); };
 
-        // ADD GAME TO CLOUD
         document.getElementById('add-game-form').onsubmit = async function(e) {
             e.preventDefault();
             const selectedGrades = Array.from(document.querySelectorAll('input[name="grades"]:checked')).map(cb => cb.value);
-            if (selectedGrades.length === 0) { alert("Select at least one grade page!"); return; }
+            if (selectedGrades.length === 0) { alert("Please select at least one grade page!"); return; }
 
             const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = 'SYNCING...';
+            btn.disabled = true; btn.innerText = 'SAVING TO CLOUD...';
 
             try {
                 const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
@@ -301,11 +304,11 @@
                 this.reset();
                 document.querySelectorAll('input[name="grades"]').forEach(cb => cb.checked = false);
                 window.toggleAdmin();
-            } finally { btn.disabled = false; btn.innerText = 'SYNC TO ALL LABS'; }
+            } catch(e) { console.error("Save failed:", e); } finally { btn.disabled = false; btn.innerText = 'ADD TO CLOUD LAB'; }
         };
 
         window.deleteGame = async function(id) {
-            if(confirm('Remove this game from the Cloud Lab? This will delete it for ALL students.')) {
+            if(confirm('Permanently delete this game for ALL students?')) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', id));
             }
         }
@@ -315,18 +318,17 @@
             container.innerHTML = '';
             games.forEach(game => {
                 const item = document.createElement('div');
-                item.className = "flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-bold";
-                const gl = Array.isArray(game.grades) ? game.grades.join(',') : game.grade;
+                item.className = "flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-bold shadow-sm";
+                const gl = Array.isArray(game.grades) ? game.grades.join(',') : (game.grade || '?');
                 item.innerHTML = `
                     <div class="truncate mr-2"><span class="text-cyan-600 font-black">[${gl}]</span> ${game.title}</div>
-                    <button onclick="window.deleteGame('${game.id}')" class="text-rose-500 hover:text-rose-700"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <button onclick="window.deleteGame('${game.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 `;
                 container.appendChild(item);
             });
             lucide.createIcons();
         }
 
-        // GAME IFRAME OVERLAY LOGIC
         window.openGame = function(url) {
             const overlay = document.getElementById('game-overlay');
             const iframe = document.getElementById('game-iframe');
@@ -347,7 +349,6 @@
             p.style.display = p.style.display === 'block' ? 'none' : 'block';
         }
 
-        // Secret Shortcut (Ctrl+Shift+L)
         window.onkeydown = e => { if (e.ctrlKey && e.shiftKey && e.key === 'L') window.requestAdminAccess(); };
         lucide.createIcons();
     </script>
