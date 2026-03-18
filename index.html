@@ -226,4 +226,129 @@
                     card.onclick = () => window.openGame(game);
                     const label = Array.isArray(game.grades) ? game.grades.join(', ') : (game.grade || '?');
                     card.innerHTML = `
-                        <div class
+                        <div class="h-48 bg-slate-100 flex items-center justify-center relative overflow-hidden">
+                            ${game.image ? `<img src="${game.image}" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500">` : `<i data-lucide="flask-conical" class="w-16 h-16 text-slate-300"></i>`}
+                            <div class="absolute bottom-3 right-3 bg-white text-cyan-700 font-black px-3 py-1 rounded-xl text-xs uppercase shadow-md border-2 border-cyan-100">Grade ${label}</div>
+                        </div>
+                        <div class="p-6 text-center font-black text-xl text-slate-800 tracking-tight">${game.title}</div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+            lucide.createIcons();
+        }
+
+        window.filterGames = function(grade) {
+            currentFilter = grade;
+            document.querySelectorAll('.grade-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + grade).classList.add('active');
+            window.renderGrid();
+        }
+
+        window.requestAdminAccess = function() {
+            if (isAdminAuthenticated) { window.toggleAdmin(); } 
+            else { document.getElementById('password-modal').style.display = 'flex'; setTimeout(() => document.getElementById('admin-password-input').focus(), 100); }
+        };
+
+        window.hidePasswordModal = function() { document.getElementById('password-modal').style.display = 'none'; };
+        window.checkAdminPassword = function() {
+            if (document.getElementById('admin-password-input').value === "RUCsr13") {
+                isAdminAuthenticated = true; window.hidePasswordModal(); window.toggleAdmin();
+            } else { document.getElementById('password-error').classList.remove('hidden'); }
+        };
+
+        document.getElementById('add-game-form').onsubmit = function(e) {
+            e.preventDefault();
+            const selectedGrades = Array.from(document.querySelectorAll('input[name="grades"]:checked')).map(cb => cb.value);
+            if (selectedGrades.length === 0) { alert("Select at least one grade page!"); return; }
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.innerText = 'SYNCING...';
+
+            const payload = {
+                id: Date.now().toString(),
+                title: document.getElementById('new-title').value,
+                grades: selectedGrades,
+                image: document.getElementById('new-image').value,
+                createdAt: Date.now()
+            };
+
+            if(currentTab === 'url') { payload.url = document.getElementById('new-url').value; }
+            else { payload.code = document.getElementById('new-code').value; }
+
+            // Add the new game and save it!
+            games.push(payload);
+            saveGames();
+
+            this.reset();
+            document.querySelectorAll('input[name="grades"]').forEach(cb => cb.checked = false);
+            window.toggleAdmin();
+            
+            btn.disabled = false; 
+            btn.innerText = 'PLUG & PLAY SYNC';
+        };
+
+        window.deleteGame = function(id) {
+            if(confirm('Delete this game for ALL labs?')) {
+                games = games.filter(g => g.id !== id);
+                saveGames();
+            }
+        }
+
+        function renderInventory() {
+            const container = document.getElementById('admin-inventory');
+            container.innerHTML = '';
+            games.forEach(game => {
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-[10px] font-bold shadow-sm";
+                const gl = Array.isArray(game.grades) ? game.grades.join(',') : (game.grade || '?');
+                const type = game.code ? 'CODE' : 'URL';
+                item.innerHTML = `
+                    <div class="truncate mr-2"><span class="text-cyan-600">[${gl}]</span> <span class="text-slate-400">(${type})</span> ${game.title}</div>
+                    <button onclick="window.deleteGame('${game.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                `;
+                container.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        window.openGame = function(game) {
+            const overlay = document.getElementById('game-overlay');
+            const iframe = document.getElementById('game-iframe');
+            document.getElementById('header-title').innerText = game.title.toUpperCase();
+            
+            if(game.code) {
+                iframe.src = 'about:blank';
+                setTimeout(() => {
+                    const doc = iframe.contentWindow.document;
+                    doc.open();
+                    doc.write(game.code);
+                    doc.close();
+                }, 10);
+            } else {
+                iframe.src = game.url;
+            }
+            
+            overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            iframe.onload = () => { iframe.focus(); if (iframe.contentWindow) iframe.contentWindow.focus(); };
+        }
+
+        window.closeGame = function() {
+            document.getElementById('game-overlay').style.display = 'none';
+            document.getElementById('game-iframe').src = 'about:blank';
+            document.body.style.overflow = 'auto';
+        }
+
+        window.toggleAdmin = function() {
+            const p = document.getElementById('admin-panel');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
+        }
+
+        window.onkeydown = e => { 
+            if (e.ctrlKey && e.shiftKey && e.key === 'L') window.requestAdminAccess(); 
+            if (e.key === 'Enter' && document.getElementById('password-modal').style.display === 'flex') window.checkAdminPassword();
+        };
+    </script>
+</body>
+</html>
