@@ -34,7 +34,6 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- HEADER -->
     <header class="bg-cyan-900 text-white shadow-md relative z-20 border-b-4 border-cyan-700">
         <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="filterGames('all')">
@@ -42,8 +41,9 @@
                 <h1 class="text-3xl font-black tracking-tight">Mr. McGinley <span class="text-cyan-400">Labs</span></h1>
             </div>
             <div class="flex items-center space-x-4">
-                <button id="admin-toggle-btn" onclick="requestAdminAccess()" class="bg-cyan-800 p-2 rounded-lg hover:bg-cyan-700 transition-colors shadow-lg" title="Admin Settings">
+                <button id="admin-toggle-btn" onclick="requestAdminAccess()" class="flex items-center space-x-2 bg-cyan-800 px-4 py-2 rounded-xl hover:bg-cyan-700 transition-colors shadow-lg border-2 border-cyan-500 font-bold" title="Admin Settings">
                     <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span>SETTINGS</span>
                 </button>
                 <button onclick="document.getElementById('info-modal').style.display='flex'" class="hidden sm:flex items-center space-x-2 bg-cyan-700 px-4 py-2 rounded-xl font-bold border-2 border-cyan-500 shadow-lg">
                     <i data-lucide="info" class="w-5 h-5"></i>
@@ -53,7 +53,6 @@
         </div>
     </header>
 
-    <!-- GRADE BAR -->
     <nav class="bg-white shadow-lg sticky top-0 z-10 border-b-2 border-slate-200">
         <div class="max-w-7xl mx-auto flex justify-center space-x-3 py-3 px-2 overflow-x-auto no-scrollbar">
             <button onclick="filterGames('K')" id="btn-K" class="grade-btn flex-shrink-0 bg-rose-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-rose-700 shadow-md uppercase">K</button>
@@ -66,7 +65,6 @@
         </div>
     </nav>
 
-    <!-- MAIN GRID -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         <div id="loading-state" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             <div class="h-64 rounded-3xl loading-shimmer border-4 border-slate-100"></div>
@@ -80,7 +78,6 @@
         </div>
     </main>
 
-    <!-- PLUG & PLAY LAB MANAGER -->
     <aside id="admin-panel" class="p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-black text-cyan-900 italic uppercase tracking-tighter">Lab Manager</h2>
@@ -128,7 +125,6 @@
                 <input type="text" id="new-image" placeholder="Paste an image address here" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold focus:border-cyan-500 transition-colors">
             </div>
 
-            <!-- PLUG & PLAY TOGGLE -->
             <div class="bg-slate-50 p-4 rounded-2xl border-2 border-slate-100">
                 <label class="block text-[10px] font-black uppercase text-slate-400 mb-3">Game Content (Plug & Play)</label>
                 <div class="flex space-x-2 mb-4 border-b border-slate-200">
@@ -157,7 +153,6 @@
         <div id="admin-inventory" class="space-y-2"></div>
     </aside>
 
-    <!-- PASSWORD MODAL -->
     <div id="password-modal">
         <div class="bg-white p-8 rounded-[2rem] border-8 border-cyan-500 shadow-2xl text-center max-w-sm w-full mx-4">
             <div class="bg-cyan-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-cyan-600"><i data-lucide="lock" class="w-8 h-8"></i></div>
@@ -172,7 +167,6 @@
         </div>
     </div>
 
-    <!-- GAME OVERLAY (Main Window) -->
     <div id="game-overlay">
         <div class="flex justify-between items-center max-w-7xl mx-auto px-4 h-16 text-white font-black">
             <span id="header-title" class="text-xl italic uppercase tracking-widest">Lab Experiment Active</span>
@@ -183,43 +177,27 @@
         <div id="game-container"><iframe id="game-iframe" src="" class="w-full h-full border-none"></iframe></div>
     </div>
 
-    <!-- Firebase System -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-        let games = [];
+    <script>
+        // Load games from local browser storage
+        let games = JSON.parse(localStorage.getItem('mrmcginleylabs_games')) || [];
         let currentFilter = 'all';
         let isAdminAuthenticated = false;
         let currentTab = 'url';
 
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else { await signInAnonymously(auth); }
-            } catch(e) { console.error("Auth Failed:", e); }
-        };
-        initAuth();
+        // Run when the page first loads
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('game-grid').classList.remove('hidden');
+            window.renderGrid();
+            renderInventory();
+            lucide.createIcons();
+        });
 
-        onAuthStateChanged(auth, (user) => { if (user) setupDataListener(); });
-
-        function setupDataListener() {
-            const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
-            onSnapshot(gamesRef, (snapshot) => {
-                games = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                window.renderGrid();
-                renderInventory();
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('game-grid').classList.remove('hidden');
-            });
+        // Function to save your updates permanently
+        function saveGames() {
+            localStorage.setItem('mrmcginleylabs_games', JSON.stringify(games));
+            window.renderGrid();
+            renderInventory();
         }
 
         // TABS
@@ -238,8 +216,9 @@
             
             const filtered = games.filter(g => currentFilter === 'all' || (Array.isArray(g.grades) && g.grades.includes(currentFilter)) || g.grade === currentFilter);
             
-            if (filtered.length === 0) { noGames.classList.remove('hidden'); } 
-            else {
+            if (filtered.length === 0) { 
+                noGames.classList.remove('hidden'); 
+            } else {
                 noGames.classList.add('hidden');
                 filtered.forEach(game => {
                     const card = document.createElement('div');
@@ -247,127 +226,4 @@
                     card.onclick = () => window.openGame(game);
                     const label = Array.isArray(game.grades) ? game.grades.join(', ') : (game.grade || '?');
                     card.innerHTML = `
-                        <div class="h-48 bg-slate-100 flex items-center justify-center relative overflow-hidden">
-                            ${game.image ? `<img src="${game.image}" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500">` : `<i data-lucide="flask-conical" class="w-16 h-16 text-slate-300"></i>`}
-                            <div class="absolute bottom-3 right-3 bg-white text-cyan-700 font-black px-3 py-1 rounded-xl text-xs uppercase shadow-md border-2 border-cyan-100">Grade ${label}</div>
-                        </div>
-                        <div class="p-6 text-center font-black text-xl text-slate-800 tracking-tight">${game.title}</div>
-                    `;
-                    grid.appendChild(card);
-                });
-            }
-            lucide.createIcons();
-        }
-
-        window.filterGames = function(grade) {
-            currentFilter = grade;
-            document.querySelectorAll('.grade-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('btn-' + grade).classList.add('active');
-            window.renderGrid();
-        }
-
-        window.requestAdminAccess = function() {
-            if (isAdminAuthenticated) { window.toggleAdmin(); } 
-            else { document.getElementById('password-modal').style.display = 'flex'; setTimeout(() => document.getElementById('admin-password-input').focus(), 100); }
-        };
-
-        window.hidePasswordModal = function() { document.getElementById('password-modal').style.display = 'none'; };
-        window.checkAdminPassword = function() {
-            if (document.getElementById('admin-password-input').value === "RUCsr13") {
-                isAdminAuthenticated = true; window.hidePasswordModal(); window.toggleAdmin();
-            } else { document.getElementById('password-error').classList.remove('hidden'); }
-        };
-
-        document.getElementById('add-game-form').onsubmit = async function(e) {
-            e.preventDefault();
-            const selectedGrades = Array.from(document.querySelectorAll('input[name="grades"]:checked')).map(cb => cb.value);
-            if (selectedGrades.length === 0) { alert("Select at least one grade page!"); return; }
-
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = 'SYNCING...';
-
-            const payload = {
-                title: document.getElementById('new-title').value,
-                grades: selectedGrades,
-                image: document.getElementById('new-image').value,
-                createdAt: Date.now()
-            };
-
-            if(currentTab === 'url') { payload.url = document.getElementById('new-url').value; }
-            else { payload.code = document.getElementById('new-code').value; }
-
-            try {
-                const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
-                await addDoc(gamesRef, payload);
-                this.reset();
-                document.querySelectorAll('input[name="grades"]').forEach(cb => cb.checked = false);
-                window.toggleAdmin();
-            } catch(e) { console.error(e); } finally { btn.disabled = false; btn.innerText = 'PLUG & PLAY SYNC'; }
-        };
-
-        window.deleteGame = async function(id) {
-            if(confirm('Delete this game for ALL labs?')) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', id));
-            }
-        }
-
-        function renderInventory() {
-            const container = document.getElementById('admin-inventory');
-            container.innerHTML = '';
-            games.forEach(game => {
-                const item = document.createElement('div');
-                item.className = "flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-[10px] font-bold shadow-sm";
-                const gl = Array.isArray(game.grades) ? game.grades.join(',') : (game.grade || '?');
-                const type = game.code ? 'CODE' : 'URL';
-                item.innerHTML = `
-                    <div class="truncate mr-2"><span class="text-cyan-600">[${gl}]</span> <span class="text-slate-400">(${type})</span> ${game.title}</div>
-                    <button onclick="window.deleteGame('${game.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                `;
-                container.appendChild(item);
-            });
-            lucide.createIcons();
-        }
-
-        window.openGame = function(game) {
-            const overlay = document.getElementById('game-overlay');
-            const iframe = document.getElementById('game-iframe');
-            document.getElementById('header-title').innerText = game.title.toUpperCase();
-            
-            if(game.code) {
-                // RUN DIRECT CODE
-                iframe.src = 'about:blank';
-                setTimeout(() => {
-                    const doc = iframe.contentWindow.document;
-                    doc.open();
-                    doc.write(game.code);
-                    doc.close();
-                }, 10);
-            } else {
-                // LOAD LINK
-                iframe.src = game.url;
-            }
-            
-            overlay.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            iframe.onload = () => { iframe.focus(); if (iframe.contentWindow) iframe.contentWindow.focus(); };
-        }
-
-        window.closeGame = function() {
-            document.getElementById('game-overlay').style.display = 'none';
-            document.getElementById('game-iframe').src = 'about:blank';
-            document.body.style.overflow = 'auto';
-        }
-
-        window.toggleAdmin = function() {
-            const p = document.getElementById('admin-panel');
-            p.style.display = p.style.display === 'block' ? 'none' : 'block';
-        }
-
-        window.onkeydown = e => { 
-            if (e.ctrlKey && e.shiftKey && e.key === 'L') window.requestAdminAccess(); 
-            if (e.key === 'Enter' && document.getElementById('password-modal').style.display === 'flex') window.checkAdminPassword();
-        };
-        lucide.createIcons();
-    </script>
-</body>
-</html>
+                        <div class
