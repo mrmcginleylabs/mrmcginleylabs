@@ -26,10 +26,8 @@
         .loading-shimmer { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
-        /* Highlighting for selected grades in admin panel */
         .grade-checkbox:checked + label { background-color: #0891b2; color: white; border-color: #0891b2; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3); }
 
-        /* Security Clearance Modal */
         #password-modal { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); align-items: center; justify-content: center; }
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -46,8 +44,7 @@
                 <h1 class="text-3xl font-black tracking-tight">Mr. McGinley <span class="text-cyan-400">Labs</span></h1>
             </div>
             <div class="flex items-center space-x-4">
-                <!-- Settings button is always visible -->
-                <button id="admin-toggle-btn" onclick="requestAdminAccess()" class="bg-cyan-800 p-2 rounded-lg hover:bg-cyan-700 transition-colors" title="Admin Settings">
+                <button id="admin-toggle-btn" onclick="requestAdminAccess()" class="bg-cyan-800 p-2 rounded-lg hover:bg-cyan-700 transition-colors shadow-lg" title="Admin Settings">
                     <i data-lucide="settings" class="w-5 h-5"></i>
                 </button>
                 <button onclick="document.getElementById('info-modal').style.display='flex'" class="hidden sm:flex items-center space-x-2 bg-cyan-700 px-4 py-2 rounded-xl font-bold border-2 border-cyan-500 shadow-lg">
@@ -60,7 +57,7 @@
 
     <!-- GRADE BAR -->
     <nav class="bg-white shadow-lg sticky top-0 z-10 border-b-2 border-slate-200">
-        <div class="max-w-7xl mx-auto flex justify-center space-x-2 sm:space-x-4 py-3 px-2 overflow-x-auto no-scrollbar">
+        <div class="max-w-7xl mx-auto flex justify-center space-x-3 py-3 px-2 overflow-x-auto no-scrollbar">
             <button onclick="filterGames('K')" id="btn-K" class="grade-btn flex-shrink-0 bg-rose-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-rose-700 shadow-md">K</button>
             <button onclick="filterGames('1')" id="btn-1" class="grade-btn flex-shrink-0 bg-orange-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-orange-700 shadow-md">1</button>
             <button onclick="filterGames('2')" id="btn-2" class="grade-btn flex-shrink-0 bg-amber-400 text-amber-900 font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-amber-600 shadow-md">2</button>
@@ -71,7 +68,7 @@
         </div>
     </nav>
 
-    <!-- GRID -->
+    <!-- MAIN GRID -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         <div id="loading-state" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             <div class="h-64 rounded-3xl loading-shimmer border-4 border-slate-100"></div>
@@ -93,6 +90,11 @@
             <button onclick="toggleAdmin()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-6 h-6"></i></button>
         </div>
         
+        <div id="sync-notice" class="bg-amber-50 border-2 border-amber-200 p-3 rounded-xl mb-6 hidden">
+            <p class="text-[10px] font-black text-amber-700 uppercase">⚠️ Running in Local Mode</p>
+            <p class="text-[9px] font-bold text-amber-600">Changes are saved to this computer only. Connect Firebase for cloud sync.</p>
+        </div>
+
         <form id="add-game-form" class="space-y-4">
             <div>
                 <label class="block text-xs font-black uppercase text-slate-500 mb-1">Experiment Name</label>
@@ -137,13 +139,13 @@
                 <label class="block text-xs font-black uppercase text-slate-500 mb-1">Game Filename</label>
                 <input type="text" id="new-url" required placeholder="circus-typing.html" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold focus:border-cyan-500 transition-colors">
             </div>
-            <button type="submit" id="submit-btn" class="w-full bg-cyan-600 text-white font-black py-4 rounded-2xl shadow-lg border-b-4 border-cyan-800 active:border-b-0 active:translate-y-1 transition-all">
-                ADD TO CLOUD LAB
+            <button type="submit" id="submit-btn" class="w-full bg-cyan-600 text-white font-black py-4 rounded-2xl shadow-lg border-b-4 border-cyan-800 active:border-b-0 active:translate-y-1 transition-all uppercase">
+                Add To Lab Inventory
             </button>
         </form>
 
         <hr class="my-8 border-slate-200">
-        <h3 class="text-xs font-black uppercase text-slate-400 mb-4">Cloud Inventory</h3>
+        <h3 class="text-xs font-black uppercase text-slate-400 mb-4">Inventory Management</h3>
         <div id="admin-inventory" class="space-y-2"></div>
     </aside>
 
@@ -175,48 +177,71 @@
         <div id="game-container"><iframe id="game-iframe" src="" class="w-full h-full border-none"></iframe></div>
     </div>
 
-    <!-- Firebase SDKs and Logic -->
+    <!-- Firebase SDKs & App Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        setLogLevel('error'); 
-        
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
+        let db, auth;
+        let useCloud = false;
         let games = [];
         let currentFilter = 'all';
         let isAdminAuthenticated = false;
 
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch(e) { console.error("Auth Failed:", e); }
-        };
-        initAuth();
+        // --- STEP 1: INITIALIZE ENVIRONMENT ---
+        try {
+            // Check if environment provided Firebase config
+            if (typeof __firebase_config !== 'undefined') {
+                const config = JSON.parse(__firebase_config);
+                const app = initializeApp(config);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                useCloud = true;
+                
+                // Sign in
+                const initAuth = async () => {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                };
+                initAuth();
+                
+                onAuthStateChanged(auth, (user) => { if (user) setupCloudListener(); });
+            } else {
+                throw new Error("No config");
+            }
+        } catch (e) {
+            console.log("Local Mode: Firestore variables missing.");
+            document.getElementById('sync-notice').classList.remove('hidden');
+            setupLocalStore();
+        }
 
-        onAuthStateChanged(auth, (user) => { if (user) setupDataListener(); });
-
-        function setupDataListener() {
+        // --- STEP 2: DATA LISTENERS ---
+        function setupCloudListener() {
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default';
             const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
             onSnapshot(gamesRef, (snapshot) => {
                 games = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                window.renderGrid();
-                renderInventory();
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('game-grid').classList.remove('hidden');
-            }, (err) => console.error("Snapshot Error:", err));
+                refreshUI();
+            });
         }
 
+        function setupLocalStore() {
+            games = JSON.parse(localStorage.getItem('mcginley_labs_games')) || [];
+            refreshUI();
+        }
+
+        function refreshUI() {
+            window.renderGrid();
+            renderInventory();
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('game-grid').classList.remove('hidden');
+        }
+
+        // --- STEP 3: UI ACTIONS ---
         window.renderGrid = function() {
             const grid = document.getElementById('game-grid');
             const noGames = document.getElementById('no-games');
@@ -224,10 +249,7 @@
             
             const filtered = games.filter(g => {
                 if (currentFilter === 'all') return true;
-                if (Array.isArray(g.grades)) {
-                    return g.grades.includes(currentFilter);
-                }
-                return g.grade === currentFilter;
+                return Array.isArray(g.grades) ? g.grades.includes(currentFilter) : g.grade === currentFilter;
             });
             
             if (filtered.length === 0) {
@@ -259,6 +281,7 @@
             window.renderGrid();
         }
 
+        // --- STEP 4: ADMIN / PASSWORD ---
         window.requestAdminAccess = function() {
             if (isAdminAuthenticated) { window.toggleAdmin(); } 
             else { 
@@ -290,26 +313,42 @@
             if (selectedGrades.length === 0) { alert("Please select at least one grade page!"); return; }
 
             const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = 'SAVING TO CLOUD...';
+            btn.disabled = true; btn.innerText = 'SAVING...';
 
-            try {
-                const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
-                await addDoc(gamesRef, {
-                    title: document.getElementById('new-title').value,
-                    grades: selectedGrades,
-                    image: document.getElementById('new-image').value,
-                    url: document.getElementById('new-url').value,
-                    createdAt: Date.now()
-                });
-                this.reset();
-                document.querySelectorAll('input[name="grades"]').forEach(cb => cb.checked = false);
-                window.toggleAdmin();
-            } catch(e) { console.error("Save failed:", e); } finally { btn.disabled = false; btn.innerText = 'ADD TO CLOUD LAB'; }
+            const newGame = {
+                title: document.getElementById('new-title').value,
+                grades: selectedGrades,
+                image: document.getElementById('new-image').value,
+                url: document.getElementById('new-url').value,
+                createdAt: Date.now()
+            };
+
+            if (useCloud) {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default';
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'games'), newGame);
+            } else {
+                newGame.id = Date.now();
+                games.push(newGame);
+                localStorage.setItem('mcginley_labs_games', JSON.stringify(games));
+                refreshUI();
+            }
+
+            this.reset();
+            document.querySelectorAll('input[name="grades"]').forEach(cb => cb.checked = false);
+            btn.disabled = false; btn.innerText = 'Add To Lab Inventory';
+            window.toggleAdmin();
         };
 
         window.deleteGame = async function(id) {
-            if(confirm('Permanently delete this game for ALL students?')) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', id));
+            if(confirm('Permanently delete this game?')) {
+                if (useCloud) {
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default';
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', id));
+                } else {
+                    games = games.filter(g => g.id !== id);
+                    localStorage.setItem('mcginley_labs_games', JSON.stringify(games));
+                    refreshUI();
+                }
             }
         }
 
@@ -329,6 +368,7 @@
             lucide.createIcons();
         }
 
+        // --- STEP 5: WINDOWS ---
         window.openGame = function(url) {
             const overlay = document.getElementById('game-overlay');
             const iframe = document.getElementById('game-iframe');
