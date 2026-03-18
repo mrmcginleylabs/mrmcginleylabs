@@ -22,19 +22,8 @@
         #game-overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); }
         #game-container { position: relative; width: 95%; height: 90%; max-width: 1200px; margin: 2% auto; background: white; border-radius: 2rem; overflow: hidden; border: 8px solid #0891b2; }
         
-        #admin-panel { display: none; position: fixed; top: 0; right: 0; width: 420px; height: 100%; background: white; z-index: 200; box-shadow: -10px 0 30px rgba(0,0,0,0.2); border-left: 4px solid #0891b2; overflow-y: auto; }
-        .loading-shimmer { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        
-        .grade-checkbox:checked + label { background-color: #0891b2; color: white; border-color: #0891b2; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3); transform: translateY(2px); }
-
-        #password-modal { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); align-items: center; justify-content: center; }
-        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .add-card { border: 4px dashed #cbd5e1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: #94a3b8; transition: all 0.2s; }
-        .add-card:hover { border-color: #0891b2; color: #0891b2; background-color: #ecfeff; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -47,20 +36,17 @@
                 <h1 class="text-3xl font-black tracking-tight">Mr. McGinley <span class="text-cyan-400">Labs</span></h1>
             </div>
             <div class="flex items-center space-x-4">
-                <button id="admin-gear" onclick="requestAdminAccess()" class="bg-cyan-800 p-2 rounded-lg hover:bg-cyan-700 transition-colors shadow-lg" title="Admin Settings">
-                    <i data-lucide="settings" class="w-5 h-5"></i>
-                </button>
-                <button onclick="document.getElementById('info-modal').style.display='flex'" class="hidden sm:flex items-center space-x-2 bg-cyan-700 px-4 py-2 rounded-xl font-bold border-2 border-cyan-500 shadow-lg">
+                <button onclick="document.getElementById('info-modal').style.display='flex'" class="flex items-center space-x-2 bg-cyan-700 px-4 py-2 rounded-xl font-bold border-2 border-cyan-500 shadow-lg">
                     <i data-lucide="info" class="w-5 h-5"></i>
-                    <span>Teacher Info</span>
+                    <span class="hidden sm:inline">Teacher Info</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- GRADE BAR -->
+    <!-- GRADE BAR (Navigation) -->
     <nav class="bg-white shadow-lg sticky top-0 z-10 border-b-2 border-slate-200">
-        <div class="max-w-7xl mx-auto flex justify-center space-x-3 py-3 px-2 overflow-x-auto no-scrollbar">
+        <div class="max-w-7xl mx-auto flex justify-center space-x-2 sm:space-x-4 py-3 px-2 overflow-x-auto no-scrollbar">
             <button onclick="filterGames('K')" id="btn-K" class="grade-btn flex-shrink-0 bg-rose-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-rose-700 shadow-md">K</button>
             <button onclick="filterGames('1')" id="btn-1" class="grade-btn flex-shrink-0 bg-orange-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-orange-700 shadow-md">1</button>
             <button onclick="filterGames('2')" id="btn-2" class="grade-btn flex-shrink-0 bg-amber-400 text-amber-900 font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-amber-600 shadow-md">2</button>
@@ -73,104 +59,13 @@
 
     <!-- GRID -->
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
-        <div id="loading-state" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="h-64 rounded-3xl loading-shimmer border-4 border-slate-100"></div>
-            <div class="h-64 rounded-3xl loading-shimmer border-4 border-slate-100"></div>
-            <div class="h-64 rounded-3xl loading-shimmer border-4 border-slate-100"></div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 hidden" id="game-grid"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="game-grid"></div>
+        
         <div id="no-games" class="hidden text-center py-20 text-slate-400">
             <i data-lucide="package-open" class="w-20 h-20 mx-auto mb-4 opacity-20"></i>
-            <p class="text-xl font-bold uppercase tracking-tight">This page is currently empty.</p>
+            <p class="text-xl font-bold uppercase tracking-tight">No experiments assigned to this page!</p>
         </div>
     </main>
-
-    <!-- ADMIN PANEL -->
-    <aside id="admin-panel" class="p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-black text-cyan-900 italic uppercase">Quick Add Experiment</h2>
-            <button onclick="toggleAdmin()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-6 h-6"></i></button>
-        </div>
-        
-        <div class="bg-cyan-50 border-2 border-cyan-200 p-4 rounded-2xl mb-6">
-            <label class="block text-[10px] font-black uppercase text-cyan-700 mb-1">Smart Paste (URL or Image Address)</label>
-            <input type="text" id="smart-paste" onpaste="handleSmartPaste(event)" placeholder="Paste image link here to auto-fill..." class="w-full p-2 bg-white rounded-lg border border-cyan-200 text-xs font-bold outline-none focus:ring-2 ring-cyan-500">
-        </div>
-
-        <form id="add-game-form" class="space-y-5">
-            <div>
-                <label class="block text-xs font-black uppercase text-slate-500 mb-1">Experiment Name</label>
-                <input type="text" id="new-title" required oninput="suggestFilename(this.value)" placeholder="e.g. Circus Typing" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold focus:border-cyan-500 transition-colors">
-            </div>
-            
-            <div>
-                <label class="block text-xs font-black uppercase text-slate-500 mb-2">Display on Grades:</label>
-                <div class="flex flex-wrap gap-2">
-                    <!-- Dynamic Checkboxes for simple selection -->
-                    <div class="relative flex-1 min-w-[50px]">
-                        <input type="checkbox" id="check-K" value="K" class="grade-checkbox hidden" name="grades">
-                        <label for="check-K" class="flex items-center justify-center h-12 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all uppercase">K</label>
-                    </div>
-                    <div class="relative flex-1 min-w-[50px]">
-                        <input type="checkbox" id="check-1" value="1" class="grade-checkbox hidden" name="grades">
-                        <label for="check-1" class="flex items-center justify-center h-12 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all uppercase">1</label>
-                    </div>
-                    <div class="relative flex-1 min-w-[50px]">
-                        <input type="checkbox" id="check-2" value="2" class="grade-checkbox hidden" name="grades">
-                        <label for="check-2" class="flex items-center justify-center h-12 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all uppercase">2</label>
-                    </div>
-                    <div class="relative flex-1 min-w-[50px]">
-                        <input type="checkbox" id="check-3" value="3" class="grade-checkbox hidden" name="grades">
-                        <label for="check-3" class="flex items-center justify-center h-12 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all uppercase">3</label>
-                    </div>
-                    <div class="relative flex-1 min-w-[50px]">
-                        <input type="checkbox" id="check-4" value="4" class="grade-checkbox hidden" name="grades">
-                        <label for="check-4" class="flex items-center justify-center h-12 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all uppercase">4</label>
-                    </div>
-                    <div class="relative flex-1 min-w-[50px]">
-                        <input type="checkbox" id="check-5" value="5" class="grade-checkbox hidden" name="grades">
-                        <label for="check-5" class="flex items-center justify-center h-12 rounded-xl border-2 border-slate-200 font-black cursor-pointer hover:border-cyan-500 transition-all uppercase">5</label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-black uppercase text-slate-500 mb-1">Image URL</label>
-                    <input type="text" id="new-image" placeholder="images/logo.png" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold focus:border-cyan-500 transition-colors text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-black uppercase text-slate-500 mb-1">Filename (.html)</label>
-                    <input type="text" id="new-url" required placeholder="game.html" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-slate-200 outline-none font-bold focus:border-cyan-500 transition-colors text-sm">
-                </div>
-            </div>
-
-            <button type="submit" id="submit-btn" class="w-full bg-cyan-600 text-white font-black py-4 rounded-2xl shadow-lg border-b-4 border-cyan-800 active:border-b-0 active:translate-y-1 transition-all text-xl uppercase italic">
-                Sync To All Labs
-            </button>
-        </form>
-
-        <hr class="my-8 border-slate-200">
-        <h3 class="text-xs font-black uppercase text-slate-400 mb-4">Inventory</h3>
-        <div id="admin-inventory" class="space-y-2 mb-20"></div>
-    </aside>
-
-    <!-- PASSWORD MODAL -->
-    <div id="password-modal">
-        <div class="bg-white p-8 rounded-[2rem] border-8 border-cyan-500 shadow-2xl text-center max-w-sm w-full mx-4">
-            <div class="bg-cyan-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-cyan-600">
-                <i data-lucide="lock" class="w-8 h-8"></i>
-            </div>
-            <h2 class="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight">Security Clearance</h2>
-            <p class="text-slate-500 font-bold text-sm mb-6">Enter password to unlock Lab Manager.</p>
-            <input type="password" id="admin-password-input" class="w-full p-4 bg-slate-100 rounded-2xl border-2 border-slate-200 outline-none text-center font-black tracking-[0.5em] focus:border-cyan-500 mb-4" placeholder="•••••••">
-            <div id="password-error" class="hidden text-rose-500 font-black text-xs mb-4 uppercase italic">Access Denied!</div>
-            <div class="flex gap-3">
-                <button onclick="hidePasswordModal()" class="flex-1 bg-slate-200 text-slate-600 font-black py-3 rounded-xl hover:bg-slate-300">CANCEL</button>
-                <button onclick="checkAdminPassword()" class="flex-1 bg-cyan-600 text-white font-black py-3 rounded-xl hover:bg-cyan-500 shadow-md">UNLOCK</button>
-            </div>
-        </div>
-    </div>
 
     <!-- GAME OVERLAY -->
     <div id="game-overlay">
@@ -183,227 +78,99 @@
         <div id="game-container"><iframe id="game-iframe" src="" class="w-full h-full border-none"></iframe></div>
     </div>
 
-    <!-- Firebase Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- TEACHER INFO MODAL -->
+    <div id="info-modal" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onclick="this.style.display='none'">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border-4 border-cyan-500" onclick="event.stopPropagation()">
+            <div class="bg-cyan-900 px-6 py-4 flex justify-between items-center text-white font-black">
+                <span>Teacher Console</span>
+                <button onclick="document.getElementById('info-modal').style.display='none'"><i data-lucide="x" class="w-8 h-8"></i></button>
+            </div>
+            <div class="p-8 text-slate-600 font-bold space-y-4 text-center">
+                <p>Welcome, Mr. McGinley! To add new games to your site, simply open the <strong>index.html</strong> file in your GitHub and add them to the <code>LAB_INVENTORY</code> list at the bottom of the code.</p>
+                <p class="text-sm">This ensures your site stays 100% free and lightning fast for your students.</p>
+            </div>
+        </div>
+    </div>
 
-        let db, auth;
-        let useCloud = false;
-        let games = [];
+    <!-- MAIN LAB LOGIC -->
+    <script>
+        // =======================================================================
+        // 🏫 TEACHER SETTINGS: YOUR GAME INVENTORY
+        // =======================================================================
+        // To add a new game to your site, simply copy one of the blocks below,
+        // paste it right underneath, and change the title, grades, and url!
+        // 
+        // Grades can be "K", "1", "2", "3", "4", "5". 
+        // Be sure to keep the quote marks and commas exactly as shown.
+        // =======================================================================
+
+        const LAB_INVENTORY = [
+            {
+                title: "Circus Typing Jr.",
+                grades: ["K", "1"],
+                image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&q=80",
+                url: "circus-typing.html"
+            },
+            {
+                title: "Keyboard Safari",
+                grades: ["1", "2", "3"],
+                image: "", // Leave blank between the quotes to use the default Lab Icon
+                url: "safari.html"
+            }
+        ];
+
+        // =======================================================================
+        // 🛑 DO NOT EDIT BELOW THIS LINE (Unless you are feeling adventurous!)
+        // =======================================================================
+
         let currentFilter = 'all';
-        let isAdminAuthenticated = false;
 
-        try {
-            if (typeof __firebase_config !== 'undefined') {
-                const config = JSON.parse(__firebase_config);
-                const app = initializeApp(config);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                useCloud = true;
-                const initAuth = async () => {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else { await signInAnonymously(auth); }
-                };
-                initAuth();
-                onAuthStateChanged(auth, (user) => { if (user) setupCloudListener(); });
-            } else { throw new Error("No config"); }
-        } catch (e) {
-            console.log("Local Mode active.");
-            setupLocalStore();
-        }
-
-        function setupCloudListener() {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default';
-            const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
-            onSnapshot(gamesRef, (snapshot) => {
-                games = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                refreshUI();
-            });
-        }
-
-        function setupLocalStore() {
-            games = JSON.parse(localStorage.getItem('mcginley_labs_games')) || [];
-            refreshUI();
-        }
-
-        function refreshUI() {
-            window.renderGrid();
-            renderInventory();
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('game-grid').classList.remove('hidden');
-        }
-
-        window.renderGrid = function() {
+        function renderGrid() {
             const grid = document.getElementById('game-grid');
             const noGames = document.getElementById('no-games');
             grid.innerHTML = '';
             
-            const filtered = games.filter(g => {
+            const filtered = LAB_INVENTORY.filter(g => {
                 if (currentFilter === 'all') return true;
-                return Array.isArray(g.grades) ? g.grades.includes(currentFilter) : g.grade === currentFilter;
+                return g.grades.includes(currentFilter);
             });
             
-            filtered.forEach(game => {
-                const card = document.createElement('div');
-                card.className = "game-card bg-white rounded-3xl overflow-hidden border-4 border-slate-200 shadow-lg group";
-                card.onclick = () => window.openGame(game.url);
-                const label = Array.isArray(game.grades) ? game.grades.join(', ') : (game.grade || '?');
-                card.innerHTML = `
-                    <div class="h-48 bg-slate-100 flex items-center justify-center relative overflow-hidden">
-                        ${game.image ? `<img src="${game.image}" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500">` : `<i data-lucide="flask-conical" class="w-16 h-16 text-slate-300"></i>`}
-                        <div class="absolute bottom-3 right-3 bg-white text-cyan-700 font-black px-3 py-1 rounded-xl text-xs uppercase shadow-md">Gr ${label}</div>
-                    </div>
-                    <div class="p-6 text-center"><h3 class="text-2xl font-black text-slate-800">${game.title}</h3></div>
-                `;
-                grid.appendChild(card);
-            });
-
-            // Add the "+" Card if logged in
-            if (isAdminAuthenticated) {
-                const addCard = document.createElement('div');
-                addCard.className = "game-card add-card rounded-3xl border-4 shadow-sm";
-                addCard.onclick = () => window.toggleAdmin();
-                addCard.innerHTML = `
-                    <i data-lucide="plus-circle" class="w-12 h-12 mb-2"></i>
-                    <span class="font-black uppercase italic">Add Experiment</span>
-                `;
-                grid.appendChild(addCard);
-            }
-            
-            if (filtered.length === 0 && !isAdminAuthenticated) {
+            if (filtered.length === 0) {
                 noGames.classList.remove('hidden');
             } else {
                 noGames.classList.add('hidden');
+                filtered.forEach(game => {
+                    const card = document.createElement('div');
+                    card.className = "game-card bg-white rounded-3xl overflow-hidden border-4 border-slate-200 shadow-lg group";
+                    card.onclick = () => openGame(game.url);
+                    const label = game.grades.join(', ');
+                    
+                    // Render image if provided, otherwise render default flask icon
+                    const imageHtml = game.image && game.image.trim() !== "" 
+                        ? `<img src="${game.image}" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500">` 
+                        : `<i data-lucide="flask-conical" class="w-16 h-16 text-slate-300"></i>`;
+
+                    card.innerHTML = `
+                        <div class="h-48 bg-slate-100 flex items-center justify-center relative overflow-hidden">
+                            ${imageHtml}
+                            <div class="absolute bottom-3 right-3 bg-white text-cyan-700 font-black px-3 py-1 rounded-xl text-xs uppercase shadow-md">Gr ${label}</div>
+                        </div>
+                        <div class="p-6 text-center"><h3 class="text-2xl font-black text-slate-800">${game.title}</h3></div>
+                    `;
+                    grid.appendChild(card);
+                });
             }
             lucide.createIcons();
         }
 
-        window.filterGames = function(grade) {
+        function filterGames(grade) {
             currentFilter = grade;
             document.querySelectorAll('.grade-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-' + grade).classList.add('active');
-            window.renderGrid();
+            renderGrid();
         }
 
-        // --- SMART HELPERS ---
-        window.handleSmartPaste = function(e) {
-            const data = e.clipboardData.getData('text');
-            if (data.includes('.png') || data.includes('.jpg') || data.includes('.jpeg') || data.includes('images/')) {
-                document.getElementById('new-image').value = data;
-            }
-            // If it's a URL like circus-typing.html
-            if (data.includes('.html')) {
-                document.getElementById('new-url').value = data;
-                if (!document.getElementById('new-title').value) {
-                    const cleanTitle = data.replace('.html', '').replace(/-/g, ' ');
-                    document.getElementById('new-title').value = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
-                }
-            }
-        };
-
-        window.suggestFilename = function(val) {
-            const suggested = val.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.html';
-            document.getElementById('new-url').placeholder = suggested;
-            // Only auto-fill if the user hasn't typed anything yet
-            if (document.getElementById('new-url').value === '') {
-                 // Option to fill? Let's leave it as a placeholder to avoid being annoying
-            }
-        };
-
-        window.requestAdminAccess = function() {
-            if (isAdminAuthenticated) { window.toggleAdmin(); } 
-            else { 
-                document.getElementById('password-modal').style.display = 'flex'; 
-                setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
-            }
-        };
-
-        window.hidePasswordModal = function() {
-            document.getElementById('password-modal').style.display = 'none';
-            document.getElementById('admin-password-input').value = '';
-            document.getElementById('password-error').classList.add('hidden');
-        };
-
-        window.checkAdminPassword = function() {
-            if (document.getElementById('admin-password-input').value === "RUCsr13") {
-                isAdminAuthenticated = true; 
-                window.hidePasswordModal(); 
-                window.toggleAdmin();
-                window.renderGrid(); // Redraw grid to show the "+" card
-            } else {
-                document.getElementById('password-error').classList.remove('hidden');
-                document.getElementById('admin-password-input').value = '';
-            }
-        };
-
-        document.getElementById('admin-password-input').onkeydown = e => { if (e.key === 'Enter') window.checkAdminPassword(); };
-
-        document.getElementById('add-game-form').onsubmit = async function(e) {
-            e.preventDefault();
-            const selectedGrades = Array.from(document.querySelectorAll('input[name="grades"]:checked')).map(cb => cb.value);
-            if (selectedGrades.length === 0) { alert("Please select at least one grade page!"); return; }
-
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true; btn.innerText = 'SYNCING...';
-
-            const newGame = {
-                title: document.getElementById('new-title').value,
-                grades: selectedGrades,
-                image: document.getElementById('new-image').value,
-                url: document.getElementById('new-url').value || document.getElementById('new-url').placeholder,
-                createdAt: Date.now()
-            };
-
-            if (useCloud) {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default';
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'games'), newGame);
-            } else {
-                newGame.id = Date.now();
-                games.push(newGame);
-                localStorage.setItem('mcginley_labs_games', JSON.stringify(games));
-                refreshUI();
-            }
-
-            this.reset();
-            document.getElementById('smart-paste').value = '';
-            document.querySelectorAll('input[name="grades"]').forEach(cb => cb.checked = false);
-            btn.disabled = false; btn.innerText = 'Sync To All Labs';
-            window.toggleAdmin();
-        };
-
-        window.deleteGame = async function(id) {
-            if(confirm('Delete experiment?')) {
-                if (useCloud) {
-                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default';
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', id));
-                } else {
-                    games = games.filter(g => g.id !== id);
-                    localStorage.setItem('mcginley_labs_games', JSON.stringify(games));
-                    refreshUI();
-                }
-            }
-        }
-
-        function renderInventory() {
-            const container = document.getElementById('admin-inventory');
-            container.innerHTML = '';
-            games.forEach(game => {
-                const item = document.createElement('div');
-                item.className = "flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-bold shadow-sm";
-                const gl = Array.isArray(game.grades) ? game.grades.join(',') : (game.grade || '?');
-                item.innerHTML = `
-                    <div class="truncate mr-2"><span class="text-cyan-600 font-black">[${gl}]</span> ${game.title}</div>
-                    <button onclick="window.deleteGame('${game.id}')" class="text-rose-400 hover:text-rose-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                `;
-                container.appendChild(item);
-            });
-            lucide.createIcons();
-        }
-
-        window.openGame = function(url) {
+        function openGame(url) {
             const overlay = document.getElementById('game-overlay');
             const iframe = document.getElementById('game-iframe');
             iframe.src = url;
@@ -412,19 +179,17 @@
             iframe.onload = () => { iframe.focus(); if (iframe.contentWindow) iframe.contentWindow.focus(); };
         }
 
-        window.closeGame = function() {
+        function closeGame() {
             document.getElementById('game-overlay').style.display = 'none';
             document.getElementById('game-iframe').src = '';
             document.body.style.overflow = 'auto';
         }
 
-        window.toggleAdmin = function() {
-            const p = document.getElementById('admin-panel');
-            p.style.display = p.style.display === 'block' ? 'none' : 'block';
-        }
-
-        window.onkeydown = e => { if (e.ctrlKey && e.shiftKey && e.key === 'L') window.requestAdminAccess(); };
-        lucide.createIcons();
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGrid();
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>
