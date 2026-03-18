@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. McGinley Labs | Educational Games</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0fdfa;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .game-card { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .game-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .grade-btn { transition: all 0.2s ease; }
+        .grade-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        .grade-btn.active { transform: translateY(4px); box-shadow: inset 0 4px 6px rgba(0,0,0,0.2); filter: brightness(0.9); }
+        .modal-open { overflow: hidden; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="bg-cyan-900 text-white shadow-md relative z-20 border-b-4 border-cyan-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="filterGames('all')">
+                    <div class="bg-white p-2 rounded-full text-cyan-900">
+                        <i data-lucide="flask-conical" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-black tracking-tight leading-none">Mr. McGinley <span class="text-cyan-400">Labs</span></h1>
+                        <p class="text-xs text-cyan-200 font-bold tracking-wider uppercase mt-1">Where Learning Clicks</p>
+                    </div>
+                </div>
+                <button onclick="openModal()" class="hidden sm:flex items-center space-x-2 bg-cyan-700 hover:bg-cyan-600 px-4 py-2 rounded-xl font-bold transition-colors border-2 border-cyan-500 shadow-sm">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                    <span>Parent / Teacher Info</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow-lg sticky top-0 z-10 border-b-2 border-slate-200">
+        <div class="max-w-7xl mx-auto px-2 sm:px-4">
+            <div class="flex justify-center space-x-2 sm:space-x-4 py-3 overflow-x-auto">
+                <button onclick="filterGames('K')" id="btn-K" class="grade-btn flex-shrink-0 bg-rose-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(190,18,60)] flex items-center justify-center">K</button>
+                <button onclick="filterGames('1')" id="btn-1" class="grade-btn flex-shrink-0 bg-orange-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(194,65,12)] flex items-center justify-center">1</button>
+                <button onclick="filterGames('2')" id="btn-2" class="grade-btn flex-shrink-0 bg-amber-400 text-amber-900 font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(180,83,9)] flex items-center justify-center">2</button>
+                <button onclick="filterGames('3')" id="btn-3" class="grade-btn flex-shrink-0 bg-emerald-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(4,120,87)] flex items-center justify-center">3</button>
+                <button onclick="filterGames('4')" id="btn-4" class="grade-btn flex-shrink-0 bg-blue-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(29,78,216)] flex items-center justify-center">4</button>
+                <button onclick="filterGames('5')" id="btn-5" class="grade-btn flex-shrink-0 bg-violet-500 text-white font-black text-xl sm:text-2xl w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(109,40,217)] flex items-center justify-center">5</button>
+                <button onclick="filterGames('all')" id="btn-all" class="grade-btn active flex-shrink-0 bg-slate-700 text-white font-black px-4 h-14 sm:h-16 rounded-2xl shadow-[0_4px_0_rgb(51,65,85)] flex items-center justify-center">ALL</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8 text-center sm:text-left">
+            <h2 id="current-category" class="text-3xl font-black text-slate-800 flex items-center justify-center sm:justify-start gap-3">
+                <i data-lucide="layout-grid" class="text-cyan-600"></i>
+                All Games
+            </h2>
+            <p class="text-slate-500 font-bold mt-1">Select a grade above to find the perfect lab experiment!</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="game-grid">
+            <div class="game-card block bg-white rounded-3xl overflow-hidden border-4 border-rose-200 shadow-md p-5" data-grades="K">
+                <h3 class="text-xl font-black text-slate-800">Coming Soon!</h3>
+                <p class="text-sm text-slate-500 font-bold">Your first game will appear here.</p>
+            </div>
+        </div>
+        
+        <div id="no-games-msg" class="hidden text-center py-12">
+            <h3 class="text-2xl font-black text-slate-700">Under Construction!</h3>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t-2 border-slate-200 mt-auto px-4 py-8 text-center text-xs text-slate-500 font-bold">
+        <p>© 2026 Mr. McGinley Labs | COPPA & FERPA Compliant</p>
+    </footer>
+
+    <div id="info-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border-4 border-cyan-500" onclick="event.stopPropagation()">
+            <div class="bg-cyan-900 px-6 py-4 flex justify-between items-center text-white">
+                <h3 class="text-xl font-black">Parent & Teacher Info</h3>
+                <button onclick="closeModal()" class="text-cyan-300 hover:text-white"><i data-lucide="x" class="w-8 h-8"></i></button>
+            </div>
+            <div class="p-6 text-slate-600 font-semibold space-y-4">
+                <p>Welcome to Mr. McGinley Labs! An ad-free, safe space for learning.</p>
+                <button onclick="closeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-black px-6 py-2 rounded-xl">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        function filterGames(grade) {
+            const cards = document.querySelectorAll('.game-card');
+            const buttons = document.querySelectorAll('.grade-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + grade).classList.add('active');
+            cards.forEach(card => {
+                const grades = card.getAttribute('data-grades').split(',');
+                card.style.display = (grade === 'all' || grades.includes(grade)) ? 'block' : 'none';
+            });
+        }
+        function openModal() { document.getElementById('info-modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('info-modal').classList.add('hidden'); }
+    </script>
+</body>
+</html>
